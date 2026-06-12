@@ -1,12 +1,15 @@
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { colors, font, radius, spacing } from '@/constants/theme';
+import { font, radius, spacing } from '@/constants/theme';
+import { Background } from '@/components/Background';
 import { loadAppData } from '@/storage/notes';
 import { Note } from '@/types';
+import { useTheme } from '@/constants/ThemeContext';
 
 export default function NotesListScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [notes, setNotes] = useState<Note[]>([]);
 
   useFocusEffect(
@@ -21,51 +24,63 @@ export default function NotesListScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>‹ Voltar</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Notas</Text>
-        <View style={{ width: 60 }} />
-      </View>
-
-      <FlatList
-        data={notes}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.empty}>
-            Nenhuma anotação ainda. Toque em + para criar.
-          </Text>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.noteCard}
-            onPress={() => router.push(`/notes/${item.id}`)}
-          >
-            <Text style={styles.noteTitle}>{item.title || 'Sem título'}</Text>
-            <Text style={styles.notePreview} numberOfLines={2}>
-              {item.content}
-            </Text>
-            <Text style={styles.noteMeta}>editado por {item.lastEditedBy}</Text>
+    <Background>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={[styles.back, { color: theme.accent }]}>‹ Voltar</Text>
           </TouchableOpacity>
-        )}
-      />
+          <Text style={[styles.title, { color: theme.text }]}>Notas</Text>
+          <View style={{ width: 60 }} />
+        </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/notes/new')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
-    </View>
+        <FlatList
+          data={notes}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={[styles.empty, { color: theme.textMuted }]}>
+              Nenhuma anotação ainda. Toque em + para criar.
+            </Text>
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.noteCard,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+              ]}
+              onPress={() => router.push(`/notes/${item.id}`)}
+            >
+              <Text style={[styles.noteTitle, { color: theme.text }]}>
+                {item.title || 'Sem título'}
+              </Text>
+              <Text
+                style={[styles.notePreview, { color: theme.textMuted }]}
+                numberOfLines={2}
+              >
+                {item.content}
+              </Text>
+              <Text style={[styles.noteMeta, { color: theme.accent }]}>
+                editado por {item.lastEditedBy}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.accent }]}
+          onPress={() => router.push('/notes/new')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.fabIcon, { color: theme.background }]}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -74,25 +89,22 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xxl,
     paddingBottom: spacing.md,
   },
-  back: { color: colors.purple, fontSize: font.sizes.md },
-  title: { color: colors.text, fontSize: font.sizes.lg, fontWeight: '700' },
+  back: { fontSize: font.sizes.md },
+  title: { fontSize: font.sizes.lg, fontWeight: '700' },
   list: { padding: spacing.lg, gap: spacing.md, flexGrow: 1 },
   empty: {
-    color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.xxl,
   },
   noteCard: {
-    backgroundColor: colors.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.md,
     gap: spacing.xs,
   },
-  noteTitle: { color: colors.text, fontSize: font.sizes.md, fontWeight: '600' },
-  notePreview: { color: colors.textMuted, fontSize: font.sizes.sm },
-  noteMeta: { color: colors.purple, fontSize: font.sizes.xs },
+  noteTitle: { fontSize: font.sizes.md, fontWeight: '600' },
+  notePreview: { fontSize: font.sizes.sm },
+  noteMeta: { fontSize: font.sizes.xs },
   fab: {
     position: 'absolute',
     right: spacing.lg,
@@ -100,9 +112,8 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: radius.full,
-    backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fabIcon: { color: colors.background, fontSize: 28, fontWeight: '700' },
+  fabIcon: { fontSize: 28, fontWeight: '700' },
 });
