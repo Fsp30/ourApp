@@ -43,7 +43,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   if (themeId === 'photo-default' && photoUri) {
     theme = {
       ...theme,
-      backgroundImage: { uri } as ImageSourcePropType,
+      backgroundImage: { uri: photoUri } as ImageSourcePropType,
     };
   }
 
