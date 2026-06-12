@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { font, spacing } from '@/constants/theme';
-import { useTheme } from '@/constants/ThemeContext';
+
 import { Background } from '@/components/Background';
-import { FolderIcon, NotesGlyph, PhotosGlyph } from '@/components/FolderIcons'
+import { FolderIcon, NotesGlyph, PhotosGlyph } from '@/components/FolderIcons';
+import { useTheme } from '@/constants/ThemeContext';
 
 const FOLDERS = [
   { id: 'notes', label: 'Notas', route: '/notes', Glyph: NotesGlyph },
@@ -17,7 +18,12 @@ export default function HomeScreen() {
   return (
     <Background>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: theme.text }]}>Garagem Ferrari/Mercedes</Text>
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: theme.text }]}>Garagem Ferrari/Mercedes</Text>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Text style={[styles.settingsIcon, { color: theme.accent }]}>⚙</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.grid}>
           {FOLDERS.map(({ id, label, route, Glyph }) => (
@@ -45,10 +51,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xxl,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xl,
+  },
   title: {
     fontSize: font.sizes.xl,
     fontWeight: '700',
-    marginBottom: spacing.xl,
+    flex: 1,
+  },
+  settingsIcon: {
+    fontSize: 22,
   },
   grid: {
     flexDirection: 'row',
