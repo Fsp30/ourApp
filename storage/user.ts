@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserId } from "@/types";
 import { STORAGE_KEYS } from './keys';
 
-export async function saveActiveUser(userId: UserId): Promise<void>{
-    await AsyncStorage.setItem('activeUser', userId);
+export async function saveActiveUser(userId: UserId): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_USER, userId);
 }
 
 export async function loadActiveUser(): Promise<UserId | null>{
