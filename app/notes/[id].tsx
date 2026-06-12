@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors, font, radius, spacing } from '@/constants/theme';
+import { font, radius, spacing } from '@/constants/theme';
+import { useTheme } from '@/constants/ThemeContext';
+import { Background } from '@/components/Background';
 import { deleteNote, loadAppData, upsertNote } from '@/storage/notes';
 import { loadActiveUser } from '@/storage/user';
 import { Note, UserId } from '@/types';
 
 export default function NoteEditorScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
 
@@ -28,7 +31,7 @@ export default function NoteEditorScreen() {
         }
       });
     }
-  }, [id]);
+  }, [id,isNew]);
 
   async function handleSave() {
     if (!user) return;
@@ -66,75 +69,75 @@ export default function NoteEditorScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>‹ Cancelar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.save}>Salvar</Text>
-        </TouchableOpacity>
+    <Background>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={[styles.back, { color: theme.textMuted }]}>‹ Cancelar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave}>
+            <Text style={[styles.save, { color: theme.accent }]}>Salvar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          style={[styles.titleInput, { color: theme.text, borderBottomColor: theme.border }]}
+          placeholder="Título"
+          placeholderTextColor={theme.textMuted}
+          value={title}
+          onChangeText={setTitle}
+        />
+        <TextInput
+          style={[styles.contentInput, { color: theme.text }]}
+          placeholder="Escreva algo..."
+          placeholderTextColor={theme.textMuted}
+          value={content}
+          onChangeText={setContent}
+          multiline
+          textAlignVertical="top"
+        />
+
+        {!isNew && (
+          <TouchableOpacity
+            style={[styles.deleteButton, { backgroundColor: theme.surface, borderColor: theme.danger }]}
+            onPress={handleDelete}
+          >
+            <Text style={[styles.deleteText, { color: theme.danger }]}>Excluir anotação</Text>
+          </TouchableOpacity>
+        )}
       </View>
-
-      <TextInput
-        style={styles.titleInput}
-        placeholder="Título"
-        placeholderTextColor={colors.textMuted}
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        style={styles.contentInput}
-        placeholder="Escreva algo..."
-        placeholderTextColor={colors.textMuted}
-        value={content}
-        onChangeText={setContent}
-        multiline
-        textAlignVertical="top"
-      />
-
-      {!isNew && (
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteText}>Excluir anotação</Text>
-        </TouchableOpacity>
-      )}
-    </View>
+    </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, padding: spacing.lg },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: spacing.xl,
     paddingBottom: spacing.md,
   },
-  back: { color: colors.textMuted, fontSize: font.sizes.md },
-  save: { color: colors.purple, fontSize: font.sizes.md, fontWeight: '700' },
+  back: { fontSize: font.sizes.md },
+  save: { fontSize: font.sizes.md, fontWeight: '700' },
   titleInput: {
-    color: colors.text,
     fontSize: font.sizes.xl,
     fontWeight: '700',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     marginBottom: spacing.md,
   },
   contentInput: {
     flex: 1,
-    color: colors.text,
     fontSize: font.sizes.md,
     lineHeight: 22,
   },
   deleteButton: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.danger,
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
     marginTop: spacing.md,
   },
-  deleteText: { color: colors.danger, fontWeight: '600' },
+  deleteText: { fontWeight: '600' },
 });
