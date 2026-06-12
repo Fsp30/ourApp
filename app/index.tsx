@@ -21,16 +21,17 @@ export default function UserSelectScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadActiveUser()
-      .then((userId) => {
-        if (userId) {
-          router.replace('/home');
-        } else {
-          setLoading(false);
-        }
-      })
-      .catch(() => setLoading(false));
-  }, []);
+      loadActiveUser()
+        .then((userId) => {
+          if (userId) {
+            router.replace('/home');
+          } else {
+            setLoading(false);
+          }
+        })
+        .catch(() => setLoading(false));
+  }, [router]); 
+
 
   async function handleSelect(userId: UserId) {
     await saveActiveUser(userId);
