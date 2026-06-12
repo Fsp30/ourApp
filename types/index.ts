@@ -11,8 +11,8 @@ export interface Note{
     id: string;
     title: string;
     content: string;
-    createBy: UserId;
-    lastUpdatedBy: UserId;
+    createdBy: UserId;
+    lastEditedBy: UserId;
     createdAt: string;
     updatedAt: string;
 }

@@ -1,13 +1,15 @@
 export const colors = {
   background: '#0f0f0f',
   surface: '#1a1a1a',
-  surfaceAlt: '#242424',
+  surfaceAlt: '#1e1726',
   border: '#2e2e2e',
-  primary: '#c8a96e',      // dourado suave
+  primary: '#c8a96e',
   primaryLight: '#e8c98e',
   text: '#f0ede8',
   textMuted: '#8a8580',
   danger: '#c0392b',
+  purple: '#9b6dff',
+  purpleDim: '#3e2a66',
 };
 
 export const spacing = {
