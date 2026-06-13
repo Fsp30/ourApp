@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-    "package": "com.filipe.ourapp",
+      "package": "com.filipe.ourapp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -44,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7d7e6ed1-6e73-48e8-b1bd-4a3e389c2678"
+      }
     }
   }
 }
