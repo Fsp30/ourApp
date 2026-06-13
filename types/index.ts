@@ -30,3 +30,9 @@ export interface AppData{
     events: NoteEvent[];
     lastSync: string | null;
 }
+
+export interface GoogleTokens{
+    accessToken: string;
+    refreshToken: string;
+    expiretAt: number;
+}
