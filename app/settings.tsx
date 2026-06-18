@@ -9,6 +9,7 @@ import { USERS } from '@/constants/users';
 import { useTheme } from '@/constants/ThemeContext';
 import { loadActiveUser, saveActiveUser } from '@/storage/user';
 import { UserId } from '@/types';
+import { disconnectGoogle, isGoogleConnected, signInWithGoogle } from '@/lib/googleAuth';
 
 const THEME_OPTIONS: { id: ThemeId; label: string; swatch: string }[] = [
   { id: 'gengar', label: 'Gengar', swatch: themes.gengar.accent },
@@ -20,9 +21,12 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { theme, themeId, setThemeId, setPhotoBackground } = useTheme();
   const [activeUser, setActiveUser] = useState<UserId | null>(null);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     loadActiveUser().then(setActiveUser);
+    isGoogleConnected().then(setGoogleConnected);
   }, []);
 
   async function handleUserChange(userId: UserId) {
@@ -30,14 +34,28 @@ export default function SettingsScreen() {
     setActiveUser(userId);
   }
 
+  async function handleConnectGoogle() {
+    setGoogleLoading(true);
+    const success = await signInWithGoogle();
+    setGoogleConnected(success);
+    setGoogleLoading(false);
+  }
+
+  async function handleDisconnectGoogle() {
+    setGoogleLoading(true);
+    await disconnectGoogle();
+    setGoogleConnected(false);
+    setGoogleLoading(false);
+  }
+
   async function handlePickPhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 1,
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -79,12 +97,28 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.optionLabel, { color: theme.text }]}>{user.name}</Text>
-                {selected && (
-                  <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>
-                )}
+                {selected && <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>}
               </TouchableOpacity>
             );
           })}
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>Conta Google</Text>
+        <View style={styles.optionsGroup}>
+          <TouchableOpacity
+            style={[styles.optionRow, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={googleConnected ? handleDisconnectGoogle : handleConnectGoogle}
+            activeOpacity={0.75}
+            disabled={googleLoading}
+          >
+            <Text style={[styles.optionLabel, { color: theme.text }]}>
+              {googleLoading
+                ? 'Aguarde...'
+                : googleConnected
+                ? 'Conectado — Desconectar'
+                : 'Conectar conta Google'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>Tema</Text>
@@ -106,9 +140,7 @@ export default function SettingsScreen() {
               >
                 <View style={[styles.swatch, { backgroundColor: option.swatch }]} />
                 <Text style={[styles.optionLabel, { color: theme.text }]}>{option.label}</Text>
-                {selected && (
-                  <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>
-                )}
+                {selected && <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>}
               </TouchableOpacity>
             );
           })}
