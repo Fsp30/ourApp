@@ -54,7 +54,7 @@ export async function signInWithGoogle(): Promise<boolean> {
 
 export async function getValidAccessToken(): Promise<string | null> {
   try {
-    const isSignedIn = await GoogleSignin.hasPreviousSignIn();
+    const isSignedIn = await isGoogleConnected();
     if (!isSignedIn) return null;
 
     const tokens = await GoogleSignin.getTokens();
