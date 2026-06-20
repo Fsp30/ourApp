@@ -25,9 +25,18 @@ export interface NoteEvent {
     date: string;
 }
 
+export interface PhotoEntry{
+    id: string
+    name: string
+    mimeType: string
+    uploadedBy: string
+    uploadedAt: string
+}
+
 export interface AppData{
     notes: Note[];
     events: NoteEvent[];
+    photos: PhotoEntry[];
     lastSync: string | null;
 }
 
