@@ -11,7 +11,7 @@ import { syncWithDrive } from "@/lib/googleDrive";
 
 const FOLDERS = [
     { id: "notes", label: "Notas", route: "/notes", Glyph: NotesGlyph },
-    { id: "photos", label: "Fotos", route: null, Glyph: PhotosGlyph },
+    { id: "photos", label: "Fotos", route: "/photos", Glyph: PhotosGlyph },
 ] as const;
 
 export default function HomeScreen() {
@@ -27,9 +27,9 @@ export default function HomeScreen() {
     }, []);
 
     useEffect(() => {
-        runSync(); 
+        runSync();
 
-        syncInterval.current = setInterval(runSync, 30_000); 
+        syncInterval.current = setInterval(runSync, 30_000);
 
         return () => {
             if (syncInterval.current) clearInterval(syncInterval.current);
