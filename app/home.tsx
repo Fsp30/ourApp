@@ -28,9 +28,7 @@ export default function HomeScreen() {
 
     useEffect(() => {
         runSync();
-
         syncInterval.current = setInterval(runSync, 30_000);
-
         return () => {
             if (syncInterval.current) clearInterval(syncInterval.current);
         };
