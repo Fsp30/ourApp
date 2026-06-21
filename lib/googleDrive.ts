@@ -1,4 +1,4 @@
-import { AppData, PhotoEntry, UserId } from "@/types";
+import { AppData, PhotoEntry, PostIt, UserId } from "@/types";
 import { loadAppData, saveAppData } from "@/storage/notes";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
@@ -8,13 +8,17 @@ const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
 async function getToken(): Promise<string> {
-  try {
-    const tokens = await GoogleSignin.getTokens();
-    return tokens.accessToken;
-  } catch (error) {
-    console.log('getToken erro real:', JSON.stringify(error), String(error));
-    throw new Error('Não autenticado');
-  }
+    try {
+        const tokens = await GoogleSignin.getTokens();
+        return tokens.accessToken;
+    } catch (error) {
+        console.log(
+            "getToken erro real:",
+            JSON.stringify(error),
+            String(error),
+        );
+        throw new Error("Não autenticado");
+    }
 }
 
 async function findFile(
@@ -100,6 +104,14 @@ function mergeData(local: AppData, remote: AppData): AppData {
         photosMap.set(photo.id, photo);
     }
 
+    const postItsMap = new Map<string, PostIt>();
+    for (const postIt of [
+        ...(remote.postIts ?? []),
+        ...(local.postIts ?? []),
+    ]) {
+        postItsMap.set(postIt.id, postIt);
+    }
+
     return {
         notes: Array.from(notesMap.values()),
         events: Array.from(eventsMap.values()).sort((a, b) =>
@@ -107,6 +119,9 @@ function mergeData(local: AppData, remote: AppData): AppData {
         ),
         photos: Array.from(photosMap.values()).sort((a, b) =>
             b.uploadedAt.localeCompare(a.uploadedAt),
+        ),
+        postIts: Array.from(postItsMap.values()).sort((a, b) =>
+            b.createdAt.localeCompare(a.createdAt),
         ),
         lastSync: new Date().toISOString(),
     };
@@ -145,88 +160,92 @@ export async function syncWithDrive(): Promise<boolean> {
 }
 
 async function findOrCreatePhotosFolder(token: string): Promise<string> {
-  const existing = await findFile(token, FOLDER_NAME);
-  console.log('Pasta existente:', existing);
-  
-  if (existing) return existing;
+    const existing = await findFile(token, FOLDER_NAME);
+    console.log("Pasta existente:", existing);
 
-  const res = await fetch(`${DRIVE_API}/files`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      name: FOLDER_NAME,
-      mimeType: 'application/vnd.google-apps.folder',
-    }),
-  });
-  
-  const data = await res.json();
-  console.log('Pasta criada:', JSON.stringify(data));
-  return data.id;
+    if (existing) return existing;
+
+    const res = await fetch(`${DRIVE_API}/files`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name: FOLDER_NAME,
+            mimeType: "application/vnd.google-apps.folder",
+        }),
+    });
+
+    const data = await res.json();
+    console.log("Pasta criada:", JSON.stringify(data));
+    return data.id;
 }
 export async function uploadPhoto(
-  uri: string,
-  fileName: string,
-  mimeType: string,
-  uploadedBy: UserId
+    uri: string,
+    fileName: string,
+    mimeType: string,
+    uploadedBy: UserId,
 ): Promise<PhotoEntry | null> {
-  try {
-    const token = await getToken();
-    const folderId = await findOrCreatePhotosFolder(token);
+    try {
+        const token = await getToken();
+        const folderId = await findOrCreatePhotosFolder(token);
 
-    const metaRes = await fetch(`${DRIVE_API}/files`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: fileName,
-        mimeType,
-        parents: [folderId],
-      }),
-    });
-    const metaData = await metaRes.json();
-    console.log('Meta criada:', JSON.stringify(metaData));
-    if (!metaData.id) return null;
+        const metaRes = await fetch(`${DRIVE_API}/files`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: fileName,
+                mimeType,
+                parents: [folderId],
+            }),
+        });
+        const metaData = await metaRes.json();
+        console.log("Meta criada:", JSON.stringify(metaData));
+        if (!metaData.id) return null;
 
-    const uploadRes = await fetch(
-      `${UPLOAD_API}/files/${metaData.id}?uploadType=media`,
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': mimeType,
-        },
-        body: { uri } as any,
-      }
-    );
-    console.log('Upload status:', uploadRes.status);
-    const uploaded = await uploadRes.json();
-    console.log('Upload result:', JSON.stringify(uploaded));
+        const uploadRes = await fetch(
+            `${UPLOAD_API}/files/${metaData.id}?uploadType=media`,
+            {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": mimeType,
+                },
+                body: { uri } as any,
+            },
+        );
+        console.log("Upload status:", uploadRes.status);
+        const uploaded = await uploadRes.json();
+        console.log("Upload result:", JSON.stringify(uploaded));
 
-    if (!uploaded.id) return null;
+        if (!uploaded.id) return null;
 
-    const entry: PhotoEntry = {
-      id: uploaded.id,
-      name: fileName,
-      mimeType,
-      uploadedBy,
-      uploadedAt: new Date().toISOString(),
-    };
+        const entry: PhotoEntry = {
+            id: uploaded.id,
+            name: fileName,
+            mimeType,
+            uploadedBy,
+            uploadedAt: new Date().toISOString(),
+        };
 
-    const data = await loadAppData();
-    data.photos = [entry, ...data.photos];
-    await saveAppData(data);
-    await syncWithDrive();
+        const data = await loadAppData();
+        data.photos = [entry, ...data.photos];
+        await saveAppData(data);
+        await syncWithDrive();
 
-    return entry;
-  } catch (error) {
-    console.log('Erro upload detalhado:', JSON.stringify(error), String(error));
-    return null;
-  }
+        return entry;
+    } catch (error) {
+        console.log(
+            "Erro upload detalhado:",
+            JSON.stringify(error),
+            String(error),
+        );
+        return null;
+    }
 }
 export async function deletePhoto(fileId: string): Promise<boolean> {
     try {
@@ -248,11 +267,14 @@ export async function deletePhoto(fileId: string): Promise<boolean> {
     }
 }
 
-export async function getPhotoUrl(fileId: string, token?: string): Promise<string> {
-  const t = token ?? (await getToken());
-  return `${DRIVE_API}/files/${fileId}?alt=media&access_token=${t}`;
+export async function getPhotoUrl(
+    fileId: string,
+    token?: string,
+): Promise<string> {
+    const t = token ?? (await getToken());
+    return `${DRIVE_API}/files/${fileId}?alt=media&access_token=${t}`;
 }
 
 export async function getDriveToken(): Promise<string> {
-  return getToken();
+    return getToken();
 }
