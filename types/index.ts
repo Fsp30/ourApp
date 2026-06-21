@@ -33,10 +33,19 @@ export interface PhotoEntry {
     uploadedAt: string;
 }
 
+export interface PostIt {
+    id: string;
+    content: string;
+    coloer: string;
+    createdBy: string;
+    createdAt: string;
+}
+
 export interface AppData {
     notes: Note[];
     events: NoteEvent[];
     photos: PhotoEntry[];
+    postIts: PostIt[];
     lastSync: string | null;
 }
 
