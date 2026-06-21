@@ -6,6 +6,7 @@ const EMPTY_DATA: AppData = {
     notes: [],
     events: [],
     photos: [],
+    postIts: [],
     lastSync: null,
 };
 
