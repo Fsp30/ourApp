@@ -1,6 +1,6 @@
-import { loadGoogleTokens } from "@/storage/googleAuth";
 import { AppData, PhotoEntry, UserId } from "@/types";
 import { loadAppData, saveAppData } from "@/storage/notes";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const FILE_NAME = "ourapp-data.json";
 const FOLDER_NAME = "ourapp-photos";
@@ -8,9 +8,13 @@ const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
 async function getToken(): Promise<string> {
-    const tokens = await loadGoogleTokens();
-    if (!tokens) throw new Error("Não autenticado");
+  try {
+    const tokens = await GoogleSignin.getTokens();
     return tokens.accessToken;
+  } catch (error) {
+    console.log('getToken erro real:', JSON.stringify(error), String(error));
+    throw new Error('Não autenticado');
+  }
 }
 
 async function findFile(
@@ -141,87 +145,89 @@ export async function syncWithDrive(): Promise<boolean> {
 }
 
 async function findOrCreatePhotosFolder(token: string): Promise<string> {
-    const existing = await findFile(token, FOLDER_NAME);
-    if (existing) return existing;
+  const existing = await findFile(token, FOLDER_NAME);
+  console.log('Pasta existente:', existing);
+  
+  if (existing) return existing;
 
-    const res = await fetch(`${DRIVE_API}/files`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            name: FOLDER_NAME,
-            mimeType: "application/vnd.google-apps.folder",
-        }),
-    });
-    const data = await res.json();
-    return data.id;
+  const res = await fetch(`${DRIVE_API}/files`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: FOLDER_NAME,
+      mimeType: 'application/vnd.google-apps.folder',
+    }),
+  });
+  
+  const data = await res.json();
+  console.log('Pasta criada:', JSON.stringify(data));
+  return data.id;
 }
-
 export async function uploadPhoto(
-    uri: string,
-    fileName: string,
-    mimeType: string,
-    uploadedBy: UserId,
+  uri: string,
+  fileName: string,
+  mimeType: string,
+  uploadedBy: UserId
 ): Promise<PhotoEntry | null> {
-    try {
-        const token = await getToken();
-        const folderId = await findOrCreatePhotosFolder(token);
-
-        const fileRes = await fetch(uri);
-        const blob = await fileRes.blob();
-
-        const metadata = {
-            name: fileName,
-            mimeType,
-            parents: [folderId],
-        };
-
-        const formData = new FormData();
-        formData.append(
-            "metadata",
-            new Blob([JSON.stringify(metadata)], { type: "application/json" }),
-        );
-        formData.append("file", blob);
-
-        const uploadRes = await fetch(
-            `${UPLOAD_API}/files?uploadType=multipart&fields=id,name,mimeType`,
-            {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-                body: formData,
-            },
-        );
-
-        const uploaded = await uploadRes.json();
-        if (!uploaded.id) return null;
-
-        const entry: PhotoEntry = {
-            id: uploaded.id,
-            name: uploaded.name ?? fileName,
-            mimeType: uploaded.mimeType ?? mimeType,
-            uploadedBy,
-            uploadedAt: new Date().toISOString(),
-        };
-
-        const data = await loadAppData();
-        data.photos = [entry, ...data.photos];
-        await saveAppData(data);
-        await syncWithDrive();
-
-        return entry;
-    } catch (error) {
-        console.log("Erro ao fazer upload de foto:", error);
-        return null;
-    }
-}
-
-export async function getPhotoUrl(fileId: string): Promise<string> {
+  try {
     const token = await getToken();
-    return `${DRIVE_API}/files/${fileId}?alt=media&access_token=${token}`;
-}
+    const folderId = await findOrCreatePhotosFolder(token);
 
+    const metaRes = await fetch(`${DRIVE_API}/files`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: fileName,
+        mimeType,
+        parents: [folderId],
+      }),
+    });
+    const metaData = await metaRes.json();
+    console.log('Meta criada:', JSON.stringify(metaData));
+    if (!metaData.id) return null;
+
+    const uploadRes = await fetch(
+      `${UPLOAD_API}/files/${metaData.id}?uploadType=media`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': mimeType,
+        },
+        body: { uri } as any,
+      }
+    );
+    console.log('Upload status:', uploadRes.status);
+    const uploaded = await uploadRes.json();
+    console.log('Upload result:', JSON.stringify(uploaded));
+
+    if (!uploaded.id) return null;
+
+    const entry: PhotoEntry = {
+      id: uploaded.id,
+      name: fileName,
+      mimeType,
+      uploadedBy,
+      uploadedAt: new Date().toISOString(),
+    };
+
+    const data = await loadAppData();
+    data.photos = [entry, ...data.photos];
+    await saveAppData(data);
+    await syncWithDrive();
+
+    return entry;
+  } catch (error) {
+    console.log('Erro upload detalhado:', JSON.stringify(error), String(error));
+    return null;
+  }
+}
 export async function deletePhoto(fileId: string): Promise<boolean> {
     try {
         const token = await getToken();
@@ -240,4 +246,13 @@ export async function deletePhoto(fileId: string): Promise<boolean> {
         console.log("Erro ao deletar foto:", error);
         return false;
     }
+}
+
+export async function getPhotoUrl(fileId: string, token?: string): Promise<string> {
+  const t = token ?? (await getToken());
+  return `${DRIVE_API}/files/${fileId}?alt=media&access_token=${t}`;
+}
+
+export async function getDriveToken(): Promise<string> {
+  return getToken();
 }
