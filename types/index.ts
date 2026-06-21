@@ -36,7 +36,7 @@ export interface PhotoEntry {
 export interface PostIt {
     id: string;
     content: string;
-    coloer: string;
+    color: string;
     createdBy: string;
     createdAt: string;
 }
