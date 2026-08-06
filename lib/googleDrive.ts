@@ -123,6 +123,10 @@ function mergeData(local: AppData, remote: AppData): AppData {
         postIts: Array.from(postItsMap.values()).sort((a, b) =>
             b.createdAt.localeCompare(a.createdAt),
         ),
+        pushTokens: {
+            ...remote.pushTokens,
+            ...local.pushTokens,
+        },
         lastSync: new Date().toISOString(),
     };
 }
