@@ -8,7 +8,7 @@ import {
     View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-
+import { sendPushNotification, getOtherUser } from "@/lib/notifications";
 import { Background } from "@/components/Background";
 import { font, radius, spacing } from "@/constants/theme";
 import { POST_IT_COLORS, PostItColor } from "@/constants/postItColors";
@@ -59,6 +59,13 @@ export default function RecadosScreen() {
         data.postIts = [newPostIt, ...(data.postIts ?? [])];
         await saveAppData(data);
         await syncWithDrive();
+
+        const other = getOtherUser(activeUser);
+        await sendPushNotification(
+            other,
+            "🗒️ Novo recado",
+            `${activeUser}: "${content.trim().slice(0, 50)}"`,
+        );
 
         setPostIts(data.postIts);
         setContent("");
