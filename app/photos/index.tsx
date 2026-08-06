@@ -26,6 +26,7 @@ import {
 import { loadAppData } from "@/storage/notes";
 import { loadActiveUser } from "@/storage/user";
 import { PhotoEntry, UserId } from "@/types";
+import { getOtherUser, sendPushNotification } from "@/lib/notifications";
 
 const COLUMN_COUNT = 3;
 const GAP = 8;
@@ -96,6 +97,12 @@ export default function PhotosScreen() {
             user as UserId,
         );
         if (entry) {
+            const other = getOtherUser(user as UserId);
+            await sendPushNotification(
+                other,
+                "📸 Nova foto",
+                `${user} adicionou uma foto`,
+            );
             const url = await getPhotoUrl(entry.id);
             setPhotos((prev) => [entry, ...prev]);
             setPhotoUrls((prev) => ({ ...prev, [entry.id]: url }));
@@ -136,31 +143,42 @@ export default function PhotosScreen() {
     }
 
     async function handleCamera() {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) return;
-    
-      const result = await ImagePicker.launchCameraAsync({
-        quality: 0.8,
-        allowsEditing: false,
-      });
-    
-      if (result.canceled || !result.assets[0]) return;
-    
-      const asset = result.assets[0];
-      const user = await loadActiveUser();
-      if (!user) return;
-    
-      setUploading(true);
-      const fileName = `photo_${Date.now()}.jpg`;
-      const mimeType = asset.mimeType ?? 'image/jpeg';
-    
-      const entry = await uploadPhoto(asset.uri, fileName, mimeType, user as UserId);
-      if (entry) {
-        const token = await getDriveToken();
-        setPhotos((prev) => [entry, ...prev]);
-        setPhotoUrls((prev) => ({ ...prev, [entry.id]: token }));
-      }
-      setUploading(false);
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) return;
+
+        const result = await ImagePicker.launchCameraAsync({
+            quality: 0.8,
+            allowsEditing: false,
+        });
+
+        if (result.canceled || !result.assets[0]) return;
+
+        const asset = result.assets[0];
+        const user = await loadActiveUser();
+        if (!user) return;
+
+        setUploading(true);
+        const fileName = `photo_${Date.now()}.jpg`;
+        const mimeType = asset.mimeType ?? "image/jpeg";
+
+        const entry = await uploadPhoto(
+            asset.uri,
+            fileName,
+            mimeType,
+            user as UserId,
+        );
+        if (entry) {
+            const other = getOtherUser(user as UserId);
+            await sendPushNotification(
+                other,
+                "📸 Nova foto",
+                `${user} adicionou uma foto`,
+            );
+            const token = await getDriveToken();
+            setPhotos((prev) => [entry, ...prev]);
+            setPhotoUrls((prev) => ({ ...prev, [entry.id]: token }));
+        }
+        setUploading(false);
     }
 
     if (loading) {
@@ -190,20 +208,42 @@ export default function PhotosScreen() {
         <Background>
             <View style={styles.container}>
                 <View style={styles.header}>
-                  <TouchableOpacity onPress={() => router.back()}>
-                    <Text style={[styles.back, { color: theme.accent }]}>‹ Voltar</Text>
-                  </TouchableOpacity>
-                  <Text style={[styles.title, { color: theme.text }]}>Fotos</Text>
-                  <View style={styles.headerActions}>
-                    <TouchableOpacity onPress={handleCamera} disabled={uploading}>
-                      <Text style={[styles.actionBtn, { color: theme.accent }]}>
-                        {uploading ? '...' : '⊙'}
-                      </Text>
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <Text style={[styles.back, { color: theme.accent }]}>
+                            ‹ Voltar
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleUpload} disabled={uploading}>
-                      <Text style={[styles.actionBtn, { color: theme.accent }]}>+</Text>
-                    </TouchableOpacity>
-                  </View>
+                    <Text style={[styles.title, { color: theme.text }]}>
+                        Fotos
+                    </Text>
+                    <View style={styles.headerActions}>
+                        <TouchableOpacity
+                            onPress={handleCamera}
+                            disabled={uploading}
+                        >
+                            <Text
+                                style={[
+                                    styles.actionBtn,
+                                    { color: theme.accent },
+                                ]}
+                            >
+                                {uploading ? "..." : "⊙"}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleUpload}
+                            disabled={uploading}
+                        >
+                            <Text
+                                style={[
+                                    styles.actionBtn,
+                                    { color: theme.accent },
+                                ]}
+                            >
+                                +
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {photos.length === 0 ? (
@@ -288,13 +328,13 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     headerActions: {
-      flexDirection: 'row',
-      gap: spacing.md,
-      alignItems: 'center',
+        flexDirection: "row",
+        gap: spacing.md,
+        alignItems: "center",
     },
     actionBtn: {
-      fontSize: font.sizes.xxl,
-      fontWeight: '700',
-      lineHeight: 32,
+        fontSize: font.sizes.xxl,
+        fontWeight: "700",
+        lineHeight: 32,
     },
 });
