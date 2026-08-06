@@ -6,6 +6,8 @@ import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
 import { deleteNote, loadAppData, upsertNote } from '@/storage/notes';
 import { loadActiveUser } from '@/storage/user';
+import { syncWithDrive } from '@/lib/googleDrive';
+import { sendPushNotification, getOtherUser } from '@/lib/notifications';
 import { Note, UserId } from '@/types';
 
 export default function NoteEditorScreen() {
@@ -31,7 +33,7 @@ export default function NoteEditorScreen() {
         }
       });
     }
-  }, [id,isNew]);
+  }, [id, isNew]);
 
   async function handleSave() {
     if (!user) return;
@@ -50,6 +52,15 @@ export default function NoteEditorScreen() {
         };
 
     await upsertNote(note, isNew ? 'create' : 'edit', user);
+    await syncWithDrive();
+
+    const other = getOtherUser(user);
+    if (isNew) {
+      await sendPushNotification(other, '📝 Nova nota', `${user} criou "${title || 'Sem título'}"`);
+    } else {
+      await sendPushNotification(other, '✏️ Nota editada', `${user} editou "${title || 'Sem título'}"`);
+    }
+
     router.back();
   }
 
@@ -62,6 +73,12 @@ export default function NoteEditorScreen() {
         style: 'destructive',
         onPress: async () => {
           await deleteNote(originalNote.id, user);
+          await syncWithDrive();
+          await sendPushNotification(
+            getOtherUser(user),
+            '🗑️ Nota excluída',
+            `${user} excluiu "${originalNote.title || 'Sem título'}"`
+          );
           router.back();
         },
       },
