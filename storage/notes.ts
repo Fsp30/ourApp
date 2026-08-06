@@ -7,6 +7,7 @@ const EMPTY_DATA: AppData = {
     events: [],
     photos: [],
     postIts: [],
+    pushTokens: {},
     lastSync: null,
 };
 

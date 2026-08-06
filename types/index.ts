@@ -46,6 +46,7 @@ export interface AppData {
     events: NoteEvent[];
     photos: PhotoEntry[];
     postIts: PostIt[];
+    pushTokens: Partial<Record<UserId, string>>;
     lastSync: string | null;
 }
 
