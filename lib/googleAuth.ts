@@ -5,28 +5,42 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { clearGoogleTokens, saveGoogleTokens } from '@/storage/googleAuth';
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!,
-  scopes: [
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/photoslibrary.readonly',
-  ],
-  offlineAccess: true, 
-});
-
 export async function signInWithGoogle(): Promise<boolean> {
   try {
     await GoogleSignin.hasPlayServices();
     const response = await GoogleSignin.signIn();
-
     if (response.type !== 'success') return false;
 
-    const tokens = await GoogleSignin.getTokens();
+    const { serverAuthCode } = response.data;
+    if (!serverAuthCode) {
+      const tokens = await GoogleSignin.getTokens();
+      await saveGoogleTokens({
+        accessToken: tokens.accessToken,
+        refreshToken: '',
+        expiretAt: Date.now() + 55 * 60 * 1000,
+      });
+      return true;
+    }
+
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code: serverAuthCode,
+        client_id: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!,
+        client_secret: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET!,
+        redirect_uri: '',
+        grant_type: 'authorization_code',
+      }).toString(),
+    });
+
+    const data = await res.json();
+    if (!data.access_token) return false;
 
     await saveGoogleTokens({
-      accessToken: tokens.accessToken,
-      refreshToken: '',
-      expiretAt: Date.now() + 55 * 60 * 1000, 
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token ?? '',
+      expiretAt: Date.now() + (data.expires_in ?? 3600) * 1000,
     });
 
     return true;
@@ -56,7 +70,6 @@ export async function getValidAccessToken(): Promise<string | null> {
   try {
     const isSignedIn = await isGoogleConnected();
     if (!isSignedIn) return null;
-
     const tokens = await GoogleSignin.getTokens();
     return tokens.accessToken;
   } catch {
@@ -67,8 +80,7 @@ export async function getValidAccessToken(): Promise<string | null> {
 export async function disconnectGoogle() {
   try {
     await GoogleSignin.signOut();
-  } catch {
-  }
+  } catch {}
   await clearGoogleTokens();
 }
 
