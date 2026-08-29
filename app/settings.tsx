@@ -10,12 +10,20 @@ import { useTheme } from '@/constants/ThemeContext';
 import { loadActiveUser, saveActiveUser } from '@/hooks/useActiveUser';
 import { UserId } from '@/types';
 import { disconnectGoogle, isGoogleConnected, signInWithGoogle } from '@/services/auth/googleAuth';
+import { getDb } from '@/services/firestore/firestoreClient';
+import { doc, setDoc } from '@react-native-firebase/firestore';
 
 const THEME_OPTIONS: { id: ThemeId; label: string; swatch: string }[] = [
   { id: 'gengar', label: 'Gengar', swatch: themes.gengar.accent },
   { id: 'kitty', label: 'Kitty', swatch: themes.kitty.accent },
   { id: 'photo-default', label: 'Foto personalizada', swatch: themes['photo-default'].accent },
 ];
+
+
+async function testFirestore() {
+  await setDoc(doc(getDb(), 'ping', 'test'), { at: new Date().toISOString() });
+  console.log('Firestore OK');
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -26,7 +34,9 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadActiveUser().then(setActiveUser);
-    isGoogleConnected().then(setGoogleConnected);
+      isGoogleConnected().then(setGoogleConnected);
+      testFirestore()
+      
   }, []);
 
   async function handleUserChange(userId: UserId) {
