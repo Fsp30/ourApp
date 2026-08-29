@@ -7,9 +7,9 @@ import { Background } from '@/components/Background';
 import { font, radius, spacing, themes, ThemeId } from '@/constants/theme';
 import { USERS } from '@/constants/users';
 import { useTheme } from '@/constants/ThemeContext';
-import { loadActiveUser, saveActiveUser } from '@/storage/user';
+import { loadActiveUser, saveActiveUser } from '@/hooks/useActiveUser';
 import { UserId } from '@/types';
-import { disconnectGoogle, isGoogleConnected, signInWithGoogle } from '@/lib/googleAuth';
+import { disconnectGoogle, isGoogleConnected, signInWithGoogle } from '@/services/auth/googleAuth';
 
 const THEME_OPTIONS: { id: ThemeId; label: string; swatch: string }[] = [
   { id: 'gengar', label: 'Gengar', swatch: themes.gengar.accent },

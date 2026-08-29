@@ -12,7 +12,7 @@ import { USERS } from '@/constants/users';
 import { font, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
-import { loadActiveUser, saveActiveUser } from '@/storage/user';
+import { loadActiveUser, saveActiveUser } from '@/hooks/useActiveUser';
 import { UserId } from '@/types';
 
 export default function UserSelectScreen() {

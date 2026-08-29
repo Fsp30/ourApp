@@ -16,17 +16,17 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Background } from "@/components/Background";
 import { font, spacing } from "@/constants/theme";
 import { useTheme } from "@/constants/ThemeContext";
-import { isGoogleConnected } from "@/lib/googleAuth";
+import { isGoogleConnected } from "@/services/auth/googleAuth";
 import {
     deletePhoto,
     getDriveToken,
     getPhotoUrl,
     uploadPhoto,
-} from "@/lib/googleDrive";
+} from "@/services/drive/photoService";
 import { loadAppData } from "@/storage/notes";
 import { loadActiveUser } from "@/storage/user";
 import { PhotoEntry, UserId } from "@/types";
-import { getOtherUser, sendPushNotification } from "@/lib/notifications";
+import { getOtherUser, sendPushNotification } from "@/services/notifications/pushTokenService";
 
 const COLUMN_COUNT = 3;
 const GAP = 8;

@@ -6,8 +6,8 @@ import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
 import { deleteNote, loadAppData, upsertNote } from '@/storage/notes';
 import { loadActiveUser } from '@/storage/user';
-import { syncWithDrive } from '@/lib/googleDrive';
-import { sendPushNotification, getOtherUser } from '@/lib/notifications';
+import { syncWithDrive } from '@/services/drive/appDataSyncService';
+import { sendPushNotification, getOtherUser } from '@/services/notifications/pushTokenService';
 import { Note, UserId } from '@/types';
 
 export default function NoteEditorScreen() {

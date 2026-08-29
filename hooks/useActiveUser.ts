@@ -1,12 +1,12 @@
 import { UserId } from "@/types";
 import * as activeUserStorage from "@/storage/user";
-import { registerPushToken } from "@/services/notificatios/pushToeknService";
+import { registerPushToken } from "@/services/notifications/pushTokenService";
 
 export async function loadActiveUser(): Promise<UserId | null> {
     return activeUserStorage.loadActiveUser();
 }
 
-export async function saveActionUser(userId: UserId): Promise<void> {
+export async function saveActiveUser(userId: UserId): Promise<void> {
     await activeUserStorage.saveActiveUser(userId);
     try {
         await registerPushToken();
