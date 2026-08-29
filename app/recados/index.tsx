@@ -8,12 +8,12 @@ import {
     View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import { sendPushNotification, getOtherUser } from "@/lib/notifications";
+import { sendPushNotification, getOtherUser } from "@/services/notifications/pushTokenService";
 import { Background } from "@/components/Background";
 import { font, radius, spacing } from "@/constants/theme";
 import { POST_IT_COLORS, PostItColor } from "@/constants/postItColors";
 import { useTheme } from "@/constants/ThemeContext";
-import { syncWithDrive } from "@/lib/googleDrive";
+import { syncWithDrive } from "@/services/drive/appDataSyncService";
 import { loadAppData, saveAppData } from "@/storage/notes";
 import { loadActiveUser } from "@/storage/user";
 import { PostIt, UserId } from "@/types";
