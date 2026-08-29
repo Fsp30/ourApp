@@ -43,10 +43,7 @@
 ├── expo-env.d.ts
 ├── google-services.json
 ├── hooks
-├── lib
-│   ├── googleAuth.ts
-│   ├── googleDrive.ts
-│   └── notifications.ts
+│   └── useActiveUser.ts
 ├── node_modules
 │   ├── eslint -> .pnpm/eslint@9.39.4/node_modules/eslint
 │   ├── eslint-config-expo -> .pnpm/eslint-config-expo@10.0.0_eslint@9.39.4_typescript@5.9.3/node_modules/eslint-config-expo
@@ -95,6 +92,15 @@
 ├── README.md
 ├── scripts
 │   └── reset-project.js
+├── services
+│   ├── auth
+│   │   └── googleAuth.ts
+│   ├── drive
+│   │   ├── appDataSyncService.ts
+│   │   ├── driveClient.ts
+│   │   └── photoService.ts
+│   └── notifications
+│       └── pushTokenService.ts
 ├── storage
 │   ├── googleAuth.ts
 │   ├── keys.ts
@@ -105,4 +111,4 @@
 └── types
     └── index.ts
 
-56 directories, 49 files
+59 directories, 52 files
