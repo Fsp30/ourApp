@@ -6,7 +6,6 @@ import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
 import { deleteNoteById, getNote, saveNote } from '@/services/firestore/notesService';
 import { loadActiveUser } from '@/storage/user';
-import { syncWithDrive } from '@/services/drive/appDataSyncService';
 import { sendPushNotification, getOtherUser } from '@/services/notifications/pushTokenService';
 import { Note, UserId } from '@/types';
 
