@@ -72,6 +72,10 @@
 │   ├── react-native -> .pnpm/react-native@0.81.5_@babel+core@7.29.7_@types+react@19.1.17_react@19.1.0/node_modules/react-native
 │   ├── @react-native-async-storage
 │   │   └── async-storage -> ../.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.5_@babel+core@7.29.7__396e9a83766428d8988eeb7f16293a35/node_modules/@react-native-async-storage/async-storage
+│   ├── @react-native-firebase
+│   │   ├── app -> ../.pnpm/@react-native-firebase+app@26.3.2_@react-native-async-storage+async-storage@2.2.0_react_880f3aa50498d066686004e618cfd2be/node_modules/@react-native-firebase/app
+│   │   ├── auth -> ../.pnpm/@react-native-firebase+auth@26.3.2_@react-native-firebase+app@26.3.2_@react-native-asyn_a8859113b19dc1c087c5be656036a2b6/node_modules/@react-native-firebase/auth
+│   │   └── firestore -> ../.pnpm/@react-native-firebase+firestore@26.3.2_@react-native-firebase+app@26.3.2_@react-native_5a36ae413542156d724e030067dbee92/node_modules/@react-native-firebase/firestore
 │   ├── react-native-gesture-handler -> .pnpm/react-native-gesture-handler@2.28.0_react-native@0.81.5_@babel+core@7.29.7_@types+react_be99934ea49bb53ff69ebeabbffac55b/node_modules/react-native-gesture-handler
 │   ├── @react-native-google-signin
 │   │   └── google-signin -> ../.pnpm/@react-native-google-signin+google-signin@16.1.2_expo@54.0.35_react-native@0.81.5_@babe_f1f52854b8f5c2bbb64a0d436e0bdf8a/node_modules/@react-native-google-signin/google-signin
@@ -99,6 +103,8 @@
 │   │   ├── appDataSyncService.ts
 │   │   ├── driveClient.ts
 │   │   └── photoService.ts
+│   ├── firestore
+│   │   └── firestoreClient.ts
 │   └── notifications
 │       └── pushTokenService.ts
 ├── storage
@@ -111,4 +117,4 @@
 └── types
     └── index.ts
 
-59 directories, 52 files
+64 directories, 53 files
