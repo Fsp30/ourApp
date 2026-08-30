@@ -17,16 +17,14 @@ import { Background } from "@/components/Background";
 import { font, spacing } from "@/constants/theme";
 import { useTheme } from "@/constants/ThemeContext";
 import { isGoogleConnected } from "@/services/auth/googleAuth";
-import {
-    deletePhoto,
-    getDriveToken,
-    getPhotoUrl,
-    uploadPhoto,
-} from "@/services/drive/photoService";
-import { loadAppData } from "@/storage/notes";
+import { getDriveToken } from "@/services/drive/photoService";
+import { usePhotos } from "@/hooks/usePhotos";
 import { loadActiveUser } from "@/storage/user";
 import { PhotoEntry, UserId } from "@/types";
-import { getOtherUser, sendPushNotification } from "@/services/notifications/pushTokenService";
+import {
+    getOtherUser,
+    sendPushNotification,
+} from "@/services/notifications/pushTokenService";
 
 const COLUMN_COUNT = 3;
 const GAP = 8;
@@ -36,38 +34,39 @@ const TILE_SIZE = (SCREEN_WIDTH - GAP * (COLUMN_COUNT + 1)) / COLUMN_COUNT;
 export default function PhotosScreen() {
     const router = useRouter();
     const { theme, setPhotoBackground } = useTheme();
-    const [photos, setPhotos] = useState<PhotoEntry[]>([]);
-    const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
-    const [loading, setLoading] = useState(true);
+    const {
+        photos,
+        loading: photosLoading,
+        addPhoto,
+        removePhoto,
+    } = usePhotos();
+    const [driveToken, setDriveToken] = useState<string | null>(null);
+    const [checkingConnection, setCheckingConnection] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [notConnected, setNotConnected] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
-            async function load() {
-                setLoading(true);
+            async function checkConnection() {
+                setCheckingConnection(true);
 
                 const connected = await isGoogleConnected();
                 if (!connected) {
                     setNotConnected(true);
-                    setLoading(false);
+                    setCheckingConnection(false);
                     return;
                 }
 
-                const data = await loadAppData();
-                setPhotos(data.photos ?? []);
-
+                setNotConnected(false);
                 const token = await getDriveToken();
-                const urls: Record<string, string> = {};
-                for (const photo of data.photos ?? []) {
-                    urls[photo.id] = token;
-                }
-                setPhotoUrls(urls);
-                setLoading(false);
+                setDriveToken(token);
+                setCheckingConnection(false);
             }
-            load();
+            checkConnection();
         }, []),
     );
+
+    const loading = checkingConnection || photosLoading;
 
     async function handleUpload() {
         const permission =
@@ -90,7 +89,7 @@ export default function PhotosScreen() {
         const fileName = asset.fileName ?? `photo_${Date.now()}.jpg`;
         const mimeType = asset.mimeType ?? "image/jpeg";
 
-        const entry = await uploadPhoto(
+        const entry = await addPhoto(
             asset.uri,
             fileName,
             mimeType,
@@ -103,22 +102,19 @@ export default function PhotosScreen() {
                 "📸 Nova foto",
                 `${user} adicionou uma foto`,
             );
-            const url = await getPhotoUrl(entry.id);
-            setPhotos((prev) => [entry, ...prev]);
-            setPhotoUrls((prev) => ({ ...prev, [entry.id]: url }));
         }
         setUploading(false);
     }
 
     function handleSelectPhoto(photo: PhotoEntry) {
-        const url = `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media`;
-        if (!url) return;
         Alert.alert("Opções", photo.name, [
             { text: "Cancelar", style: "cancel" },
             {
                 text: "Usar como fundo",
                 onPress: () => {
-                    setPhotoBackground(url);
+                    setPhotoBackground(
+                        `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media`,
+                    );
                     router.back();
                 },
             },
@@ -126,17 +122,7 @@ export default function PhotosScreen() {
                 text: "Excluir",
                 style: "destructive",
                 onPress: async () => {
-                    const ok = await deletePhoto(photo.id);
-                    if (ok) {
-                        setPhotos((prev) =>
-                            prev.filter((p) => p.id !== photo.id),
-                        );
-                        setPhotoUrls((prev) => {
-                            const copy = { ...prev };
-                            delete copy[photo.id];
-                            return copy;
-                        });
-                    }
+                    await removePhoto(photo.id);
                 },
             },
         ]);
@@ -161,7 +147,7 @@ export default function PhotosScreen() {
         const fileName = `photo_${Date.now()}.jpg`;
         const mimeType = asset.mimeType ?? "image/jpeg";
 
-        const entry = await uploadPhoto(
+        const entry = await addPhoto(
             asset.uri,
             fileName,
             mimeType,
@@ -174,9 +160,6 @@ export default function PhotosScreen() {
                 "📸 Nova foto",
                 `${user} adicionou uma foto`,
             );
-            const token = await getDriveToken();
-            setPhotos((prev) => [entry, ...prev]);
-            setPhotoUrls((prev) => ({ ...prev, [entry.id]: token }));
         }
         setUploading(false);
     }
@@ -269,12 +252,12 @@ export default function PhotosScreen() {
                                 onPress={() => handleSelectPhoto(item)}
                                 activeOpacity={0.8}
                             >
-                                {photoUrls[item.id] ? (
+                                {driveToken ? (
                                     <Image
                                         source={{
                                             uri: `https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`,
                                             headers: {
-                                                Authorization: `Bearer ${photoUrls[item.id]}`,
+                                                Authorization: `Bearer ${driveToken}`,
                                             },
                                         }}
                                         style={styles.tile}
