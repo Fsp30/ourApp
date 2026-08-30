@@ -8,20 +8,26 @@ import {
     View,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import { sendPushNotification, getOtherUser } from "@/services/notifications/pushTokenService";
+import {
+    sendPushNotification,
+    getOtherUser,
+} from "@/services/notifications/pushTokenService";
 import { Background } from "@/components/Background";
 import { font, radius, spacing } from "@/constants/theme";
 import { POST_IT_COLORS, PostItColor } from "@/constants/postItColors";
 import { useTheme } from "@/constants/ThemeContext";
-import { syncWithDrive } from "@/services/drive/appDataSyncService";
-import { loadAppData, saveAppData } from "@/storage/notes";
+import {
+    createPostIt,
+    deletePostItById,
+} from "@/services/firestore/postItsService";
+import { usePostIts } from "@/hooks/usePostIts";
 import { loadActiveUser } from "@/storage/user";
 import { PostIt, UserId } from "@/types";
 
 export default function RecadosScreen() {
     const router = useRouter();
     const { theme } = useTheme();
-    const [postIts, setPostIts] = useState<PostIt[]>([]);
+    const { postIts } = usePostIts();
     const [content, setContent] = useState("");
     const [selectedColor, setSelectedColor] = useState<PostItColor>(
         POST_IT_COLORS[0],
@@ -31,15 +37,7 @@ export default function RecadosScreen() {
 
     useFocusEffect(
         useCallback(() => {
-            async function load() {
-                const [data, user] = await Promise.all([
-                    loadAppData(),
-                    loadActiveUser(),
-                ]);
-                setPostIts(data.postIts ?? []);
-                setActiveUser(user as UserId);
-            }
-            load();
+            loadActiveUser().then((user) => setActiveUser(user as UserId));
         }, []),
     );
 
@@ -55,10 +53,7 @@ export default function RecadosScreen() {
             createdAt: new Date().toISOString(),
         };
 
-        const data = await loadAppData();
-        data.postIts = [newPostIt, ...(data.postIts ?? [])];
-        await saveAppData(data);
-        await syncWithDrive();
+        await createPostIt(newPostIt);
 
         const other = getOtherUser(activeUser);
         await sendPushNotification(
@@ -67,17 +62,12 @@ export default function RecadosScreen() {
             `${activeUser}: "${content.trim().slice(0, 50)}"`,
         );
 
-        setPostIts(data.postIts);
         setContent("");
         setSaving(false);
     }
 
     async function handleDelete(id: string) {
-        const data = await loadAppData();
-        data.postIts = data.postIts.filter((p) => p.id !== id);
-        await saveAppData(data);
-        await syncWithDrive();
-        setPostIts(data.postIts);
+        await deletePostItById(id);
     }
 
     return (
