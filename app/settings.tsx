@@ -27,9 +27,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadActiveUser().then(setActiveUser);
-      isGoogleConnected().then(setGoogleConnected);
-      testFirestore()
-      
+    isGoogleConnected().then(setGoogleConnected);
   }, []);
 
   async function handleUserChange(userId: UserId) {
