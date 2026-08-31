@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { font, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
-import { deleteNoteById, getNote, saveNote } from '@/services/firestore/notesService';
+import { softDeleteNote, getNote, saveNote } from '@/services/firestore/notesService';
 import { loadActiveUser } from '@/storage/user';
 import { sendPushNotification, getOtherUser } from '@/services/notifications/pushTokenService';
 import { Note, UserId } from '@/types';
@@ -47,6 +47,7 @@ export default function NoteEditorScreen() {
           lastEditedBy: user,
           createdAt: now,
           updatedAt: now,
+          deletedAt: null,
         };
 
     await saveNote(note)
@@ -69,7 +70,7 @@ export default function NoteEditorScreen() {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await deleteNoteById(originalNote.id);
+          await softDeleteNote(originalNote.id);
           await sendPushNotification(
             getOtherUser(user),
             '🗑️ Nota excluída',
