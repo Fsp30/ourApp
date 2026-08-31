@@ -4,9 +4,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { font, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
-import { deleteNote, loadAppData, upsertNote } from '@/storage/notes';
+import { deleteNoteById, getNote, saveNote } from '@/services/firestore/notesService';
 import { loadActiveUser } from '@/storage/user';
-import { syncWithDrive } from '@/services/drive/appDataSyncService';
 import { sendPushNotification, getOtherUser } from '@/services/notifications/pushTokenService';
 import { Note, UserId } from '@/types';
 
@@ -24,8 +23,7 @@ export default function NoteEditorScreen() {
   useEffect(() => {
     loadActiveUser().then(setUser);
     if (!isNew) {
-      loadAppData().then((data) => {
-        const note = data.notes.find((n) => n.id === id);
+      getNote(id).then((note) => {
         if (note) {
           setOriginalNote(note);
           setTitle(note.title);
@@ -51,8 +49,7 @@ export default function NoteEditorScreen() {
           updatedAt: now,
         };
 
-    await upsertNote(note, isNew ? 'create' : 'edit', user);
-    await syncWithDrive();
+    await saveNote(note)
 
     const other = getOtherUser(user);
     if (isNew) {
@@ -72,8 +69,7 @@ export default function NoteEditorScreen() {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await deleteNote(originalNote.id, user);
-          await syncWithDrive();
+          await deleteNoteById(originalNote.id);
           await sendPushNotification(
             getOtherUser(user),
             '🗑️ Nota excluída',

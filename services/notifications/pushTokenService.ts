@@ -1,9 +1,11 @@
 import * as Notifications from "expo-notifications";
-import { loadAppData, saveAppData } from "@/storage/notes";
+
 import { loadActiveUser } from "@/storage/user";
 import { UserId } from "@/types";
-import { isGoogleConnected } from "@/services/auth/googleAuth";
-import { syncWithDrive } from "@/services/drive/appDataSyncService";
+import {
+    getPushToken,
+    savePushToken,
+} from "@/services/firestore/pushTokensService";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -38,18 +40,10 @@ export async function registerPushToken(): Promise<void> {
         const user = await loadActiveUser();
         if (!user) return;
 
-        const data = await loadAppData();
-        if (data.pushTokens?.[user as UserId] === token) return;
+        const current = await getPushToken(user as UserId);
+        if (current === token) return;
 
-        data.pushTokens = { ...data.pushTokens, [user as UserId]: token };
-        console.log("Push token salvo localmente:", data.pushTokens);
-        await saveAppData(data);
-        
-        const connected = await isGoogleConnected();
-        if (connected) {
-            await syncWithDrive();
-        }
-
+        await savePushToken(user as UserId, token);
         console.log("Push token registrado:", token);
     } catch (error) {
         console.log("Erro ao registrar push token:", error);
@@ -62,8 +56,7 @@ export async function sendPushNotification(
     body: string,
 ): Promise<void> {
     try {
-        const data = await loadAppData();
-        const token = data.pushTokens[toUserId];
+        const token = await getPushToken(toUserId);
 
         if (!token) {
             console.log("Token não encontrado para", toUserId);

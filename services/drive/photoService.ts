@@ -1,4 +1,3 @@
-import { PhotoEntry, UserId } from "@/types";
 import {
     createFileMetadata,
     createFolder,
@@ -7,8 +6,6 @@ import {
     getToken,
     uploadBinaryContent,
 } from "./driveClient";
-import { loadAppData, saveAppData } from "@/storage/notes";
-import { syncWithDrive } from "./appDataSyncService";
 
 const FOLDER_NAME = "ourapp-photos";
 
@@ -21,12 +18,11 @@ async function findOrCreatePhotosFolder(token: string): Promise<string> {
     return created;
 }
 
-export async function uploadPhoto(
+export async function uploadPhotoBinary(
     uri: string,
     fileName: string,
     mimeType: string,
-    uploadedBy: UserId,
-): Promise<PhotoEntry | null> {
+): Promise<string | null> {
     try {
         const token = await getToken();
         const folderId = await findOrCreatePhotosFolder(token);
@@ -39,35 +35,17 @@ export async function uploadPhoto(
         const ok = await uploadBinaryContent(token, fileId, mimeType, uri);
         if (!ok) return null;
 
-        const entry: PhotoEntry = {
-            id: fileId,
-            name: fileName,
-            mimeType,
-            uploadedBy,
-            uploadedAt: new Date().toISOString(),
-        };
-
-        const data = await loadAppData();
-        data.photos = [entry, ...data.photos];
-        await saveAppData(data);
-        await syncWithDrive();
-
-        return entry;
+        return fileId;
     } catch (err) {
         console.log("Erro upload detalhado:", JSON.stringify(err), String(err));
         return null;
     }
 }
 
-export async function deletePhoto(fileId: string): Promise<boolean> {
+export async function deletePhotoBinary(fileId: string): Promise<boolean> {
     try {
         const token = await getToken();
         await deleteFile(token, fileId);
-
-        const data = await loadAppData();
-        data.photos = data.photos.filter((p) => p.id !== fileId);
-        await saveAppData(data);
-        await syncWithDrive();
 
         return true;
     } catch (err) {

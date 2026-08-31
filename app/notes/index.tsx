@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import {
     FlatList,
     StyleSheet,
@@ -6,11 +5,10 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { font, radius, spacing } from "@/constants/theme";
 import { Background } from "@/components/Background";
-import { loadAppData } from "@/storage/notes";
-import { Note } from "@/types";
+import { useNotes } from "@/hooks/useNotes";
 import { useTheme } from "@/constants/ThemeContext";
 
 function timeAgo(dateStr: string): string {
@@ -29,18 +27,7 @@ function timeAgo(dateStr: string): string {
 export default function NotesListScreen() {
     const router = useRouter();
     const { theme } = useTheme();
-    const [notes, setNotes] = useState<Note[]>([]);
-
-    useFocusEffect(
-        useCallback(() => {
-            loadAppData().then((data) => {
-                const sorted = [...data.notes].sort((a, b) =>
-                    b.updatedAt.localeCompare(a.updatedAt),
-                );
-                setNotes(sorted);
-            });
-        }, []),
-    );
+    const { notes } = useNotes();
 
     return (
         <Background>
