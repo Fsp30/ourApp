@@ -18,7 +18,7 @@ import { POST_IT_COLORS, PostItColor } from "@/constants/postItColors";
 import { useTheme } from "@/constants/ThemeContext";
 import {
     createPostIt,
-    deletePostItById,
+    softDeletePostIt,
 } from "@/services/firestore/postItsService";
 import { usePostIts } from "@/hooks/usePostIts";
 import { loadActiveUser } from "@/storage/user";
@@ -51,6 +51,7 @@ export default function RecadosScreen() {
             color: selectedColor,
             createdBy: activeUser,
             createdAt: new Date().toISOString(),
+            deletedAt: null,
         };
 
         await createPostIt(newPostIt);
@@ -67,7 +68,7 @@ export default function RecadosScreen() {
     }
 
     async function handleDelete(id: string) {
-        await deletePostItById(id);
+        await softDeletePostIt(id);
     }
 
     return (
