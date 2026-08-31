@@ -3,12 +3,13 @@ import {
     onSnapshot,
     orderBy,
     query,
+    where,
     doc,
     setDoc,
-    deleteDoc,
     type Unsubscribe,
 } from "@react-native-firebase/firestore";
 import { getDb } from "./firestoreClient";
+import { softDelete, restoreItem } from "@/services/sync/tombstones";
 import { PostIt } from "@/types";
 
 const COLLECTION = "postIts";
@@ -19,6 +20,7 @@ export function subscribeToPostIts(
 ): Unsubscribe {
     const q = query(
         collection(getDb(), COLLECTION),
+        where("deletedAt", "==", null),
         orderBy("createdAt", "desc"),
     );
     return onSnapshot(
@@ -35,6 +37,10 @@ export async function createPostIt(postIt: PostIt): Promise<void> {
     await setDoc(doc(getDb(), COLLECTION, postIt.id), postIt);
 }
 
-export async function deletePostItById(postItId: string): Promise<void> {
-    await deleteDoc(doc(getDb(), COLLECTION, postItId));
+export async function softDeletePostIt(postItId: string): Promise<void> {
+    await softDelete(COLLECTION, postItId);
+}
+
+export async function restorePostIt(postItId: string): Promise<void> {
+    await restoreItem(COLLECTION, postItId);
 }
