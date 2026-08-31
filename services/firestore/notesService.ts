@@ -1,16 +1,17 @@
 import { Note } from "@/types";
 import {
     collection,
-    deleteDoc,
-    doc,
-    getDoc,
     onSnapshot,
     orderBy,
     query,
+    where,
+    doc,
     setDoc,
-    Unsubscribe,
+    getDoc,
+    type Unsubscribe,
 } from "@react-native-firebase/firestore";
 import { getDb } from "./firestoreClient";
+import { softDelete, restoreItem } from "@/services/sync/tombstones";
 
 const COLLECTION = "notes";
 
@@ -20,6 +21,7 @@ export function subscribeToNotes(
 ): Unsubscribe {
     const q = query(
         collection(getDb(), COLLECTION),
+        where("deletedAt", "==", null),
         orderBy("updatedAt", "desc"),
     );
     return onSnapshot(
@@ -41,6 +43,10 @@ export async function saveNote(note: Note): Promise<void> {
     await setDoc(doc(getDb(), COLLECTION, note.id), note, { merge: true });
 }
 
-export async function deleteNoteById(noteId: string): Promise<void> {
-    await deleteDoc(doc(getDb(), COLLECTION, noteId));
+export async function softDeleteNote(noteId: string): Promise<void> {
+    await softDelete(COLLECTION, noteId);
+}
+
+export async function restoreNote(noteId: string): Promise<void> {
+    await restoreItem(COLLECTION, noteId);
 }
