@@ -1,3 +1,5 @@
+import { Firestore } from "@react-native-firebase/firestore";
+
 export type UserId = "lipe" | "mari";
 
 export interface User {
@@ -15,6 +17,7 @@ export interface Note {
     lastEditedBy: UserId;
     createdAt: string;
     updatedAt: string;
+    deletedAt: Firestore | null;
 }
 
 export interface NoteEvent {
@@ -23,6 +26,7 @@ export interface NoteEvent {
     noteId: string;
     user: UserId;
     date: string;
+    deletedAt: Firestore | null;
 }
 
 export interface PhotoEntry {
@@ -31,6 +35,7 @@ export interface PhotoEntry {
     mimeType: string;
     uploadedBy: string;
     uploadedAt: string;
+    deletedAt: Firestore | null;
 }
 
 export interface PostIt {
@@ -39,6 +44,7 @@ export interface PostIt {
     color: string;
     createdBy: string;
     createdAt: string;
+    deletedAt: Firestore | null;
 }
 
 export interface AppData {

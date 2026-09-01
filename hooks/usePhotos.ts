@@ -2,12 +2,9 @@ import { useEffect, useState } from "react";
 import {
     subscribeToPhotos,
     savePhotoEntry,
-    deletePhotoEntry,
+    softDeletePhotoEntry,
 } from "@/services/firestore/photosService";
-import {
-    uploadPhotoBinary,
-    deletePhotoBinary,
-} from "@/services/drive/photoService";
+import { uploadPhotoBinary } from "@/services/drive/photoService";
 import { PhotoEntry, UserId } from "@/types";
 
 export function usePhotos() {
@@ -37,17 +34,15 @@ export function usePhotos() {
             mimeType,
             uploadedBy,
             uploadedAt: new Date().toISOString(),
+            deletedAt: null,
         };
 
         await savePhotoEntry(entry);
         return entry;
     }
 
-    async function removePhoto(photoId: string): Promise<boolean> {
-        const ok = await deletePhotoBinary(photoId);
-        if (!ok) return false;
-        await deletePhotoEntry(photoId);
-        return true;
+    async function removePhoto(photoId: string): Promise<void> {
+        await softDeletePhotoEntry(photoId);
     }
 
     return { photos, loading, addPhoto, removePhoto };
