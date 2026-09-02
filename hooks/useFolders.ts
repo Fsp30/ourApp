@@ -1,8 +1,8 @@
+import { useEffect, useState } from "react";
 import { subscribeToSubfolders } from "@/services/firestore/foldersService";
 import { Folder } from "@/types";
-import { useEffect, useState } from "react";
 
-export function useSubFolders(parentId: string) {
+export function useSubfolders(parentId: string) {
     const [folders, setFolders] = useState<Folder[]>([]);
     const [loading, setLoading] = useState(true);
 
