@@ -61,3 +61,24 @@ export interface GoogleTokens {
     refreshToken: string;
     expiretAt: number;
 }
+
+export interface Folder {
+    id: string;
+    name: string;
+    parentId: string | null;
+    createdBy: UserId;
+    createdAt: string;
+    deletedAt: Firestore | null;
+}
+
+export interface FolderItem {
+    id: string;
+    folderId: string;
+    type: "link" | "photo";
+    label: string;
+    url: string | null;
+    driveFileId: string | null;
+    createdBy: UserId;
+    createdAt: string;
+    deletedAt: Firestore | null;
+}
