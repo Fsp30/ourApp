@@ -20,7 +20,7 @@ export const ROOT_FOLDER_ID = "links-e-memorias";
 export function subscribeToSubfolders(
     parentId: string,
     onChange: (folders: Folder[]) => void,
-    onError: (error: Error) => void,
+    onError?: (error: Error) => void,
 ): Unsubscribe {
     const q = query(
         collection(getDb(), COLLECTION),
