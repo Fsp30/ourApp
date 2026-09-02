@@ -4,6 +4,8 @@
 │   ├── home.tsx
 │   ├── index.tsx
 │   ├── _layout.tsx
+│   ├── lixeira
+│   │   └── index.tsx
 │   ├── modal.tsx
 │   ├── notes
 │   │   ├── [id].tsx
@@ -112,8 +114,11 @@
 │   │   ├── photosService.ts
 │   │   ├── postItsService.ts
 │   │   └── pushTokensService.ts
-│   └── notifications
-│       └── pushTokenService.ts
+│   ├── notifications
+│   │   └── pushTokenService.ts
+│   └── sync
+│       ├── purgeExpiredItems.ts
+│       └── tombstones.ts
 ├── storage
 │   ├── googleAuth.ts
 │   ├── keys.ts
@@ -124,4 +129,4 @@
 └── types
     └── index.ts
 
-64 directories, 60 files
+66 directories, 63 files
