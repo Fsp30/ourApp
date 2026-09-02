@@ -39,6 +39,15 @@ export function PhotosGlyph({ color }: { color: string }) {
   );
 }
 
+export function LinkGlyph({ color }: { color: string }) {
+  return (
+    <View style={{ width: 30, height: 22, justifyContent: 'center' }}>
+      <View style={[glyphStyles.linkOval, { borderColor: color, left: 2 }]} />
+      <View style={[glyphStyles.linkOval, { borderColor: color, left: 12 }]} />
+    </View>
+  );
+}
+
 const glyphStyles = StyleSheet.create({
   line: {
     height: 2.5,
@@ -63,7 +72,15 @@ const glyphStyles = StyleSheet.create({
     borderBottomWidth: 16,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-  },
+    },
+    linkOval: {
+        position: 'absolute',
+        top: 3,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2.5,
+    },
 });
 
 const styles = StyleSheet.create({
