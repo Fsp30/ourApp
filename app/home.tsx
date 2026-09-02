@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter,useFocusEffect} from 'expo-router';
 import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 
@@ -6,56 +6,38 @@ import { font, spacing } from '@/constants/theme';
 import { useTheme } from '@/constants/ThemeContext';
 import { Background } from '@/components/Background';
 import { PostItGlyph } from '@/components/PostItGlyph';
-import { syncWithDrive } from '@/services/drive/appDataSyncService';
-import { isGoogleConnected } from '@/services/auth/googleAuth';
-import { loadAppData } from '@/storage/notes';
 import { loadActiveUser } from '@/storage/user';
 import { PostIt, UserId } from '@/types';
-import { PhotosGlyph, FolderIcon, NotesGlyph, } from '@/components/FolderIcons';
+import { PhotosGlyph, FolderIcon, NotesGlyph, LinkGlyph } from '@/components/FolderIcons';
+import { usePostIts } from '@/hooks/usePostIts';
 
 const FOLDERS = [
   { id: 'notes', label: 'Notas', route: '/notes' },
   { id: 'photos', label: 'Fotos', route: '/photos' },
   { id: 'recados', label: 'Recados', route: '/recados' },
+  { id: 'pastas', label: 'Pastas', route: '/pastas' },
 ] as const;
 
 export default function HomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
-  const [recentPostIts, setRecentPostIts] = useState<PostIt[]>([]);
+  const { postIts } = usePostIts();
   const [activeUser, setActiveUser] = useState<UserId | null>(null);
-  const syncInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const runSync = useCallback(async () => {
-    const connected = await isGoogleConnected();
-    if (!connected) return;
-    await syncWithDrive();
-  }, []);
-
+ 
   useFocusEffect(
     useCallback(() => {
-      async function load() {
-        const [data, user] = await Promise.all([loadAppData(), loadActiveUser()]);
-        setActiveUser(user as UserId);
-        const others = (data.postIts ?? []).filter((p) => p.createdBy !== user);
-        setRecentPostIts(others.slice(0, 3));
-      }
-      load();
+      loadActiveUser().then((user) => setActiveUser(user as UserId))
     }, [])
   );
 
-  useEffect(() => {
-    runSync();
-    syncInterval.current = setInterval(runSync, 30_000);
-    return () => {
-      if (syncInterval.current) clearInterval(syncInterval.current);
-    };
-  }, [runSync]);
+    const recentPostIts = postIts.filter((p) => p.createdBy !== activeUser).slice(0, 3);
+    
 
   function renderFolderGlyph(id: string) {
     if (id === 'notes') return <NotesGlyph color={theme.accent} />;
     if (id === 'photos') return <PhotosGlyph color={theme.accent} />;
-    if (id === 'recados') return <PostItGlyph color={theme.accent} />;
+      if (id === 'recados') return <PostItGlyph color={theme.accent} />;
+      if (id === 'pastas') return <LinkGlyph color={theme.accent} />;
     return null;
   }
 
