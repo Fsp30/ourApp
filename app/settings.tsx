@@ -24,6 +24,7 @@ import {
 const THEME_OPTIONS: { id: ThemeId; label: string; swatch: string }[] = [
     { id: "gengar", label: "Gengar", swatch: themes.gengar.accent },
     { id: "kitty", label: "Kitty", swatch: themes.kitty.accent },
+    { id: "gotham", label: "Gotham", swatch: themes.gotham.accent },
     {
         id: "photo-default",
         label: "Foto personalizada",

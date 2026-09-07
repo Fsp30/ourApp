@@ -1,6 +1,7 @@
 import { Firestore } from "@react-native-firebase/firestore";
 
 export type UserId = "lipe" | "mari";
+export type HomeWidgetType = "photo" | "post-it" | "pasta";
 
 export interface User {
     id: UserId;
@@ -60,4 +61,32 @@ export interface GoogleTokens {
     accessToken: string;
     refreshToken: string;
     expiretAt: number;
+}
+
+export interface Folder {
+    id: string;
+    name: string;
+    parentId: string | null;
+    createdBy: UserId;
+    createdAt: string;
+    deletedAt: Firestore | null;
+}
+
+export interface FolderItem {
+    id: string;
+    folderId: string;
+    type: "link" | "photo";
+    label: string;
+    url: string | null;
+    driveFileId: string | null;
+    createdBy: UserId;
+    createdAt: string;
+    deletedAt: Firestore | null;
+}
+
+export interface HomeWidget {
+    id: string;
+    type: HomeWidgetType;
+    recencyIndex?: number;
+    folderId?: string;
 }

@@ -10,6 +10,9 @@
 │   ├── notes
 │   │   ├── [id].tsx
 │   │   └── index.tsx
+│   ├── pastas
+│   │   ├── [folderId].tsx
+│   │   └── index.tsx
 │   ├── photos
 │   │   └── index.tsx
 │   ├── recados
@@ -46,6 +49,8 @@
 ├── google-services.json
 ├── hooks
 │   ├── useActiveUser.ts
+│   ├── useFolderItems.ts
+│   ├── useFolders.ts
 │   ├── useNotes.ts
 │   ├── usePhotos.ts
 │   └── usePostIts.ts
@@ -110,6 +115,8 @@
 │   │   └── photoService.ts
 │   ├── firestore
 │   │   ├── firestoreClient.ts
+│   │   ├── folderItemsService.ts
+│   │   ├── foldersService.ts
 │   │   ├── notesService.ts
 │   │   ├── photosService.ts
 │   │   ├── postItsService.ts
@@ -129,4 +136,4 @@
 └── types
     └── index.ts
 
-66 directories, 63 files
+67 directories, 69 files
