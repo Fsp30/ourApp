@@ -23,7 +23,7 @@ import { useSubfolders } from "@/hooks/useFolders";
 import { useHomeLayout } from "@/hooks/useHomeLayout";
 import { getDriveToken } from "@/services/drive/photoService";
 import { ROOT_FOLDER_ID } from "@/services/firestore/foldersService";
-import { HomeWidget, PostIt, UserId } from "@/types";
+import { HomeWidget, UserId } from "@/types";
 
 const FOLDERS = [
     { id: "notes", label: "Notas", route: "/notes" },
@@ -66,7 +66,7 @@ export default function HomeScreen() {
 
     function handleWidgetPress(widget: HomeWidget) {
         if (widget.type === "photo") router.push("/photos");
-        if (widget.type === "postit") router.push("/recados");
+        if (widget.type === "post-it") router.push("/recados");
         if (widget.type === "pasta" && widget.folderId) {
             router.push(`/pastas/${widget.folderId}` as any);
         }
@@ -92,7 +92,7 @@ export default function HomeScreen() {
         const photo =
             item.type === "photo" ? photos[item.recencyIndex ?? 0] : undefined;
         const postIt =
-            item.type === "postit"
+            item.type === "post-it"
                 ? recentPostIts[item.recencyIndex ?? 0]
                 : undefined;
         const folder =
@@ -219,7 +219,7 @@ export default function HomeScreen() {
                                     backgroundColor: theme.surface,
                                 },
                             ]}
-                            onPress={() => addWidget("postit")}
+                            onPress={() => addWidget("post-it")}
                         >
                             <Text style={{ color: theme.text }}>▤ Post-it</Text>
                         </TouchableOpacity>
