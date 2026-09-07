@@ -1,6 +1,7 @@
 import { Firestore } from "@react-native-firebase/firestore";
 
 export type UserId = "lipe" | "mari";
+export type HomeWidgetType = "photo" | "post-it" | "pasta";
 
 export interface User {
     id: UserId;
@@ -81,4 +82,11 @@ export interface FolderItem {
     createdBy: UserId;
     createdAt: string;
     deletedAt: Firestore | null;
+}
+
+export interface HomeWidget {
+    id: string;
+    type: HomeWidgetType;
+    recencyIndex?: number;
+    folderId?: string;
 }
