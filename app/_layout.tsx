@@ -23,7 +23,7 @@ export default function RootLayout() {
 
     return (
         
-    <GluestackUIProvider mode="dark">
+    <GluestackUIProvider mode="light">
       <ThemeProvider>
             <Stack screenOptions={{ headerShown: false }} />
         </ThemeProvider>
