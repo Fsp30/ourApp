@@ -5,6 +5,9 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { registerPushToken } from "@/services/notifications/pushTokenService";
 import { purgeAllExpired } from "@/services/sync/purgeExpiredItems";
 
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '@/global.css';
+
 GoogleSignin.configure({
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!,
     scopes: ["https://www.googleapis.com/auth/drive.file"],
@@ -19,8 +22,12 @@ export default function RootLayout() {
     }, []);
 
     return (
-        <ThemeProvider>
+        
+    <GluestackUIProvider mode="dark">
+      <ThemeProvider>
             <Stack screenOptions={{ headerShown: false }} />
         </ThemeProvider>
+    </GluestackUIProvider>
+  
     );
 }
