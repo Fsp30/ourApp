@@ -1,6 +1,6 @@
 import { ImageSourcePropType } from "react-native";
 
-export type ThemeId = "kitty" | "gengar" | "photo-default";
+export type ThemeId = "kitty" | "gengar" | "gotham" | "photo-default";
 
 export interface Theme {
     id: ThemeId;
@@ -49,6 +49,21 @@ export const themes: Record<ThemeId, Theme> = {
         blurIntensity: 40,
         blurTint: "dark",
     },
+    gotham: {
+        id: "gotham",
+        background: "#0D1117",
+        surface: "rgba(20,24,30,0.55)",
+        surfaceAlt: "rgba(20,24,30,0.35)",
+        border: "rgba(139,109,196,0.3)",
+        accent: "#8B6DC4",
+        accentSecondary: "#4A4E58",
+        text: "#EDE6E0",
+        textMuted: "#8A8F98",
+        danger: "#C0392B",
+        backgroundImage: require("@/assets/images/bg-gotham.png"),
+        blurIntensity: 45,
+        blurTint: "dark",
+    },
     "photo-default": {
         id: "photo-default",
         background: "#E8E8E8",
@@ -60,7 +75,7 @@ export const themes: Record<ThemeId, Theme> = {
         text: "#2B2B2B",
         textMuted: "#8A8A8A",
         danger: "#C0392B",
-        backgroundImage: null, // será setado dinamicamente (Google Fotos)
+        backgroundImage: null, 
         blurIntensity: 50,
         blurTint: "light",
     },
