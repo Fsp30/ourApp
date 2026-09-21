@@ -11,7 +11,7 @@ import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Text } from "@/components/ui/text";
 
-import {  radius, spacing } from "@/constants/theme";
+import { font, radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/constants/ThemeContext";
 import { Background } from "@/components/Background";
 import { PostItGlyph } from "@/components/PostItGlyph";
