@@ -93,7 +93,7 @@ export function HomeWidgetCard({
                     </VStack>
                 )}
 
-                {widget.type === "postit" && (
+                {widget.type === "post-it" && (
                     <Box
                         className={`rounded-lg p-3 min-h-20 justify-center shadow-md ${POSTIT_ROTATIONS[index % POSTIT_ROTATIONS.length]}`}
                         style={{
