@@ -2,10 +2,8 @@ import { useCallback, useState } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Alert, Image, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import DraggableFlatList, {
-    RenderItemParams,
-} from "react-native-draggable-flatlist";
-
+import { RenderItemParams } from "react-native-draggable-flatlist";
+import { FlatList } from "react-native";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
@@ -105,7 +103,9 @@ export default function HomeScreen() {
                         <Image
                             source={{
                                 uri: `https://www.googleapis.com/drive/v3/files/${photo.id}?alt=media`,
-                                headers: { Authorization: `Bearer ${driveToken}` },
+                                headers: {
+                                    Authorization: `Bearer ${driveToken}`,
+                                },
                             }}
                             className="w-full h-40 rounded-xl"
                             resizeMode="cover"
@@ -132,7 +132,8 @@ export default function HomeScreen() {
                 <Box
                     className={`rounded-lg p-3 min-h-20 justify-center shadow-md ${POSTIT_ROTATIONS[index % POSTIT_ROTATIONS.length]}`}
                     style={{
-                        backgroundColor: POSTIT_COLORS[index % POSTIT_COLORS.length],
+                        backgroundColor:
+                            POSTIT_COLORS[index % POSTIT_COLORS.length],
                     }}
                 >
                     <Text
@@ -239,18 +240,30 @@ export default function HomeScreen() {
                         Garagem Ferrari/Mercedes
                     </Text>
                     <TouchableOpacity
-                        onPress={() => setEditing((e) => !e)}
+                        onPress={() => {
+                            console.log(
+                                "LÁPIS TOCADO, editing atual:",
+                                editing,
+                            );
+                            setEditing((e) => !e);
+                        }}
                         style={{ marginRight: spacing.md }}
                     >
                         <Text
-                            style={[styles.settingsIcon, { color: theme.accent }]}
+                            style={[
+                                styles.settingsIcon,
+                                { color: theme.accent },
+                            ]}
                         >
                             {editing ? "✓" : "✎"}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push("/settings")}>
                         <Text
-                            style={[styles.settingsIcon, { color: theme.accent }]}
+                            style={[
+                                styles.settingsIcon,
+                                { color: theme.accent },
+                            ]}
                         >
                             ⚙
                         </Text>
@@ -265,7 +278,10 @@ export default function HomeScreen() {
                             activeOpacity={0.7}
                             onPress={() => router.push(route as any)}
                         >
-                            <FolderIcon accent={theme.accent} surface={theme.surface}>
+                            <FolderIcon
+                                accent={theme.accent}
+                                surface={theme.surface}
+                            >
                                 {renderFolderGlyph(id)}
                             </FolderIcon>
                             <Text
@@ -285,19 +301,26 @@ export default function HomeScreen() {
                     Sua Home
                 </Text>
 
-                <DraggableFlatList
+                <FlatList
                     style={{ flex: 1 }}
                     data={widgets}
                     keyExtractor={(item) => item.id}
-                    renderItem={renderWidget}
-                    onDragEnd={({ data }) => reorderWidgets(data)}
+                    renderItem={(props) =>
+                        renderWidget({
+                            ...props,
+                            drag: () => {},
+                            isActive: false,
+                            getIndex: () => props.index,
+                        })
+                    }
                     contentContainerStyle={{ paddingBottom: spacing.xl }}
                     ListEmptyComponent={
                         <Text
                             className="text-center mt-6"
                             style={{ color: theme.textMuted }}
                         >
-                            Toque em ✎ e adicione widgets abaixo pra montar sua Home.
+                            Toque em ✎ e adicione widgets abaixo pra montar sua
+                            Home.
                         </Text>
                     }
                     ListFooterComponent={
@@ -314,7 +337,9 @@ export default function HomeScreen() {
                                             },
                                         ]}
                                     >
-                                        <Text style={{ color: theme.text }}>▢ Foto</Text>
+                                        <Text style={{ color: theme.text }}>
+                                            ▢ Foto
+                                        </Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         onPress={() => addWidget("post-it")}
@@ -340,14 +365,18 @@ export default function HomeScreen() {
                                             },
                                         ]}
                                     >
-                                        <Text style={{ color: theme.text }}>▥ Pasta</Text>
+                                        <Text style={{ color: theme.text }}>
+                                            ▥ Pasta
+                                        </Text>
                                     </TouchableOpacity>
                                 </HStack>
 
                                 {pickingFolder && (
                                     <Box
                                         className="rounded-2xl p-4"
-                                        style={{ backgroundColor: theme.surface }}
+                                        style={{
+                                            backgroundColor: theme.surface,
+                                        }}
                                     >
                                         <Text
                                             className="font-semibold mb-2"
@@ -364,13 +393,19 @@ export default function HomeScreen() {
                                                     setPickingFolder(false);
                                                 }}
                                             >
-                                                <Text style={{ color: theme.text }}>
+                                                <Text
+                                                    style={{
+                                                        color: theme.text,
+                                                    }}
+                                                >
                                                     📁 {f.name}
                                                 </Text>
                                             </TouchableOpacity>
                                         ))}
                                         <TouchableOpacity
-                                            onPress={() => setPickingFolder(false)}
+                                            onPress={() =>
+                                                setPickingFolder(false)
+                                            }
                                         >
                                             <Text
                                                 style={{
