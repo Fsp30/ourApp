@@ -14,6 +14,7 @@ export interface Theme {
     textMuted: string;
     danger: string;
     backgroundImage: ImageSourcePropType | null;
+    backgroundPosition?: string;
     blurIntensity: number;
     blurTint: "light" | "dark" | "default";
 }
@@ -61,6 +62,7 @@ export const themes: Record<ThemeId, Theme> = {
         textMuted: "#8A8F98",
         danger: "#C0392B",
         backgroundImage: require("@/assets/images/bg-gotham.png"),
+        backgroundPosition: "bottom",
         blurIntensity: 45,
         blurTint: "dark",
     },
@@ -75,7 +77,7 @@ export const themes: Record<ThemeId, Theme> = {
         text: "#2B2B2B",
         textMuted: "#8A8A8A",
         danger: "#C0392B",
-        backgroundImage: null, 
+        backgroundImage: null,
         blurIntensity: 50,
         blurTint: "light",
     },

@@ -2,40 +2,63 @@ import { useCallback, useEffect, useState } from "react";
 import { loadHomeLayout, saveHomeLayout } from "@/storage/homeLayout";
 import { HomeWidget, HomeWidgetType } from "@/types";
 
+const DEFAULT_TITLE = "Garagem Ferrari/Mercedes";
+
 export function useHomeLayout() {
+    const [title, setTitleState] = useState(DEFAULT_TITLE);
     const [widgets, setWidgets] = useState<HomeWidget[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadHomeLayout().then((list) => {
-            setWidgets(list);
+        loadHomeLayout().then((data) => {
+            setTitleState(data.title || DEFAULT_TITLE);
+            setWidgets(data.widgets);
             setLoading(false);
         });
     }, []);
 
-    const persist = useCallback((next: HomeWidget[]) => {
-        setWidgets(next);
-        saveHomeLayout(next);
-    }, []);
+    const persistWidgets = useCallback(
+        (next: HomeWidget[]) => {
+            setWidgets(next);
+            saveHomeLayout({ title, widgets: next });
+        },
+        [title],
+    );
+
+    function setTitle(next: string) {
+        const value = next.trim() || DEFAULT_TITLE;
+        setTitleState(value);
+        saveHomeLayout({ title: value, widgets });
+    }
 
     function addWidget(type: HomeWidgetType, folderId?: string) {
         const widget: HomeWidget = { id: `widget_${Date.now()}`, type };
         if (type === "photo" || type === "post-it") {
             widget.recencyIndex = widgets.filter((w) => w.type === type).length;
         }
-        if (type === "pasta") {
-            widget.folderId = folderId;
-        }
-        persist([...widgets, widget]);
+        if (type === "pasta") widget.folderId = folderId;
+        persistWidgets([...widgets, widget]);
     }
 
     function removeWidget(id: string) {
-        persist(widgets.filter((w) => w.id !== id));
+        persistWidgets(widgets.filter((w) => w.id !== id));
     }
 
-    function reorderWidgets(next: HomeWidget[]) {
-        persist(next);
+    function moveWidget(index: number, direction: -1 | 1) {
+        const target = index + direction;
+        if (target < 0 || target >= widgets.length) return;
+        const next = [...widgets];
+        [next[index], next[target]] = [next[target], next[index]];
+        persistWidgets(next);
     }
 
-    return { widgets, loading, addWidget, removeWidget, reorderWidgets };
+    return {
+        title,
+        setTitle,
+        widgets,
+        loading,
+        addWidget,
+        removeWidget,
+        moveWidget,
+    };
 }

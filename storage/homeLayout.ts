@@ -1,20 +1,26 @@
-import { HomeWidget } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { HomeWidget } from "@/types";
 import { STORAGE_KEYS } from "./keys";
 
-export async function loadHomeLayout(): Promise<HomeWidget[]> {
+export interface HomeLayoutData {
+    title: string;
+    widgets: HomeWidget[];
+}
+
+export async function loadHomeLayout(): Promise<HomeLayoutData> {
     const raw = await AsyncStorage.getItem(STORAGE_KEYS.HOME_LAYOUT);
-    if (!raw) return [];
+    if (!raw) return { title: "", widgets: [] };
     try {
-        return JSON.parse(raw) as HomeWidget[];
+        const parsed = JSON.parse(raw);
+        return {
+            title: parsed?.title ?? "",
+            widgets: Array.isArray(parsed) ? parsed : (parsed?.widgets ?? []),
+        };
     } catch {
-        return [];
+        return { title: "", widgets: [] };
     }
 }
 
-export async function saveHomeLayout(widgets: HomeWidget[]): Promise<void> {
-    await AsyncStorage.setItem(
-        STORAGE_KEYS.HOME_LAYOUT,
-        JSON.stringify(widgets),
-    );
+export async function saveHomeLayout(data: HomeLayoutData): Promise<void> {
+    await AsyncStorage.setItem(STORAGE_KEYS.HOME_LAYOUT, JSON.stringify(data));
 }
